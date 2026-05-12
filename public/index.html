@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLUX — Grabber</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="flux_favicon.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FLUX</h1>
+            <p>Direct video extraction. No fluff.</p>
+        </header>
+
+        <main>
+            <div class="input-wrapper">
+                <input type="text" id="url-input" placeholder="Paste URL" autocomplete="off">
+                <button id="fetch-btn" class="action-btn">
+                    <span class="btn-text">Grab</span>
+                    <div class="loader hidden" id="fetch-spinner"></div>
+                </button>
+            </div>
+
+            <div id="error-message" class="hidden" style="color: #555; text-align: center; margin-top: 1rem; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">
+                Fetch failed. Check URL.
+            </div>
+
+            <div id="result-card" class="result-card hidden">
+                <div class="preview-box">
+                    <img id="video-thumbnail" src="" alt="Thumbnail">
+                </div>
+                <div class="video-info">
+                    <h2 id="video-title">Title</h2>
+                    <p><span id="video-channel">Source</span> • <span id="video-duration">0:00</span></p>
+                </div>
+                <button id="download-btn" class="download-trigger">
+                    <span class="btn-text">Download</span>
+                    <div class="loader hidden" id="download-spinner"></div>
+                </button>
+            </div>
+
+            <div class="history hidden" id="history-container">
+                <h3 class="history-title">Recent</h3>
+                <div class="history-list" id="history-list"></div>
+            </div>
+        </main>
+        
+        <footer style="text-align: center; color: #222; font-size: 0.7rem; margin-top: 4rem; text-transform: uppercase; letter-spacing: 2px;">
+            <p>FLUX &copy; 2026 / Localhost</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
