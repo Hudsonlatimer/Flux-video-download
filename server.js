@@ -27,6 +27,7 @@ app.post('/api/info', async (req, res) => {
                 noCallHome: true,
                 noCheckCertificate: true,
                 youtubeSkipDashManifest: true,
+                noCacheDir: true, // Crucial for serverless/read-only environments
                 extractorArgs: 'twitter:api=syndication'
             });
             return res.json({
@@ -36,7 +37,7 @@ app.post('/api/info', async (req, res) => {
                 channel: info.uploader || info.channel || info.extractor_key,
             });
         } catch (initialError) {
-            console.log(`[PRO] Anonymous fetch failed.`);
+            console.error(`[PRO] Extraction failed:`, initialError.message);
             
             // Only try browser cookies on Windows (Local Development)
             if (process.platform === 'win32') {
@@ -44,10 +45,10 @@ app.post('/api/info', async (req, res) => {
                 const browsers = ['edge', 'chrome', 'firefox', 'brave'];
                 for (const browser of browsers) {
                     try {
-                        console.log(`[PRO] Trying ${browser}...`);
                         const info = await ytdlp(url, { 
                             dumpJson: true, 
                             noWarnings: true,
+                            noCacheDir: true,
                             cookiesFromBrowser: browser
                         });
                         return res.json({
@@ -62,11 +63,12 @@ app.post('/api/info', async (req, res) => {
                     }
                 }
             }
-            throw new Error('Video info could not be retrieved.');
+            res.status(500).json({ error: initialError.message });
+            return;
         }
     } catch (error) {
-        console.error('[PRO] Fetch Error:', error.message);
-        res.status(500).json({ error: 'Server reached its limit or URL is blocked.' });
+        console.error('[PRO] Fatal Error:', error.message);
+        if (!res.headersSent) res.status(500).json({ error: error.message });
     }
 });
 
@@ -83,6 +85,7 @@ app.get('/api/download', async (req, res) => {
             const options = {
                 dumpJson: true,
                 noWarnings: true,
+                noCacheDir: true,
                 extractorArgs: 'twitter:api=syndication'
             };
             if (browser) options.cookiesFromBrowser = browser;
@@ -101,6 +104,7 @@ app.get('/api/download', async (req, res) => {
                 noWarnings: true,
                 noCallHome: true,
                 noCheckCertificate: true,
+                noCacheDir: true,
                 extractorArgs: 'twitter:api=syndication'
             };
             if (browser) dlOptions.cookiesFromBrowser = browser;
@@ -109,7 +113,7 @@ app.get('/api/download', async (req, res) => {
             ytDlpProcess.stdout.pipe(res);
             ytDlpProcess.on('error', (err) => {
                 console.error('[PRO] Process Error:', err);
-                if (!res.headersSent) res.status(500).send('Download failed');
+                if (!res.headersSent) res.status(500).send('Download failed: ' + err.message);
             });
             req.on('close', () => { ytDlpProcess.kill(); });
         };
@@ -118,17 +122,19 @@ app.get('/api/download', async (req, res) => {
         try {
             await startDownload();
         } catch (e) {
-            console.log(`[PRO] Anonymous download failed, trying browser cookies...`);
-            const browsers = ['edge', 'chrome', 'firefox', 'brave'];
-            for (const browser of browsers) {
-                try {
-                    await startDownload(browser);
-                    return;
-                } catch (err) {
-                    console.log(`[PRO] ${browser} download failed.`);
+            console.error(`[PRO] Download failed:`, e.message);
+            if (process.platform === 'win32') {
+                const browsers = ['edge', 'chrome', 'firefox', 'brave'];
+                for (const browser of browsers) {
+                    try {
+                        await startDownload(browser);
+                        return;
+                    } catch (err) {
+                        console.log(`[PRO] ${browser} download failed.`);
+                    }
                 }
             }
-            if (!res.headersSent) res.status(500).send('All download methods failed.');
+            if (!res.headersSent) res.status(500).send('All download methods failed: ' + e.message);
         }
 
     } catch (error) {
