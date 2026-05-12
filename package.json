@@ -1,21 +1,19 @@
 {
-  "name": "video-downloader",
+  "name": "flux-grabber",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Industrial video extraction tool.",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build": "echo 'Build skip'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "serverless-http": "^4.0.0",
-    "uuid": "^14.0.0",
-    "yt-dlp-exec": "^1.0.2"
+    "youtube-dl-exec": "^3.1.5"
   }
 }

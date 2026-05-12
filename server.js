@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const ytdlp = require('yt-dlp-exec');
+const ytdlp = require('youtube-dl-exec');
 const fs = require('fs');
 const path = require('path');
 
