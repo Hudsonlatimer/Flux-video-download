@@ -36,30 +36,33 @@ app.post('/api/info', async (req, res) => {
                 channel: info.uploader || info.channel || info.extractor_key,
             });
         } catch (initialError) {
-            console.log(`[PRO] Anonymous fetch failed, trying local browser cookies...`);
+            console.log(`[PRO] Anonymous fetch failed.`);
             
-            // Try common browsers sequentially
-            const browsers = ['edge', 'chrome', 'firefox', 'brave'];
-            for (const browser of browsers) {
-                try {
-                    console.log(`[PRO] Attempting with ${browser} cookies...`);
-                    const info = await ytdlp(url, { 
-                        dumpJson: true, 
-                        noWarnings: true,
-                        cookiesFromBrowser: browser
-                    });
-                    return res.json({
-                        title: info.title,
-                        thumbnail: info.thumbnail,
-                        duration: info.duration_string || info.duration,
-                        channel: info.uploader || info.channel || info.extractor_key,
-                        authenticated: true
-                    });
-                } catch (e) {
-                    console.log(`[PRO] ${browser} failed: ${e.message.split('\n')[0]}`);
+            // Only try browser cookies on Windows (Local Development)
+            if (process.platform === 'win32') {
+                console.log(`[PRO] Attempting local browser cookies...`);
+                const browsers = ['edge', 'chrome', 'firefox', 'brave'];
+                for (const browser of browsers) {
+                    try {
+                        console.log(`[PRO] Trying ${browser}...`);
+                        const info = await ytdlp(url, { 
+                            dumpJson: true, 
+                            noWarnings: true,
+                            cookiesFromBrowser: browser
+                        });
+                        return res.json({
+                            title: info.title,
+                            thumbnail: info.thumbnail,
+                            duration: info.duration_string || info.duration,
+                            channel: info.uploader || info.channel || info.extractor_key,
+                            authenticated: true
+                        });
+                    } catch (e) {
+                        console.log(`[PRO] ${browser} failed.`);
+                    }
                 }
             }
-            throw new Error('All fetch methods failed.');
+            throw new Error('Video info could not be retrieved.');
         }
     } catch (error) {
         console.error('[PRO] Fetch Error:', error.message);
